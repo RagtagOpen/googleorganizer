@@ -1,0 +1,40 @@
+function addGroupMember(userEmail,groupEmail) {
+  var member = {
+    email: userEmail,
+    role: "MEMBER"
+  };
+  member = AdminDirectory.Members.insert(member, groupEmail);
+  Logger.log("User %s added as a member of group %s.", userEmail, groupEmail);
+}
+
+
+
+// make an object that has the form responses as keys and has the group emails as values.
+var groups = {
+  'Form Response Text' : 'corresponding-google-group-list@whateverthedomainis.com',
+  'Big Group' : 'big-group@whateverthedomainis.com"
+}
+
+function newFormResponse(row) {
+  Logger.log("Got new response: %s", row)
+  // get email address and group checkbox values
+
+  var userEmail = row.namedValues['Personal Email Address']
+  var selectedGroupsCell = row.namedValues['Which email lists would you be interested in?'][0]
+  var selectedGroups = selectedGroupsCell.replace(/\s+\([^)]+\)/g,'').split(', ')
+  if (row.namedValues['Would you also like to join the Big Group list?'][0] === 'Yes') {
+    selectedGroups.push('Big Group list')
+  } else {
+    Logger.log("Big Group list response was: %s", row.namedValues['Would you also like to join the Big Group list?'][0])
+  }
+  Logger.log("Selected groups: %s", selectedGroups)
+  var groupEmails = selectedGroups.map(function(groupName) {
+    // get the actual group email for this group name
+    return groups[groupName]
+  })
+  groupEmails.forEach(function(groupEmail) {
+    Logger.log("Adding %s to group %s", userEmail, groupEmail)
+    addGroupMember(userEmail, groupEmail)
+  })
+}
+
